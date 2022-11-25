@@ -53,7 +53,10 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
     override fun initLayout() {
         bindImageFromDrawable(binding.loginLogo, BaseApp.loginLogoDrawable)
 
-        binding.signInButton
+        binding.loginLogo.setOnVeryLongClickListener {
+            activity.showRemoteUrlDialog()
+        }
+
         binding.signInButton.setSize(SignInButton.SIZE_WIDE)
         binding.signInButton.setOnSingleClickListener {
             signIn()
