@@ -33,6 +33,7 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
     private var _binding: GoogleSignInLoginBinding? = null
     private val binding get() = _binding!!
 
+    override val ensureValidMail = true
     private var mGoogleSignInClient: GoogleSignInClient
     private val signInLauncher: ActivityResultLauncher<Intent> = registerSignInLauncher()
 
@@ -57,6 +58,10 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
         binding.signInButton.setOnSingleClickListener {
             signIn()
         }
+    }
+     
+    override fun validate(input: String): Boolean {
+        return true
     }
 
     override fun onInputInvalid() {
