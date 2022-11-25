@@ -23,8 +23,8 @@ import com.qmobile.qmobileui.activity.loginactivity.LoginActivity
 import com.qmobile.qmobileui.binding.bindImageFromDrawable
 import com.qmobile.qmobileui.ui.SnackbarHelper
 import com.qmobile.qmobileui.ui.setOnSingleClickListener
-import {{package}}.R
-import {{package}}.databinding.GoogleSignInLoginBinding
+import ___APP_PACKAGE___.R
+import ___APP_PACKAGE___.databinding.GoogleSignInLoginBinding
 import timber.log.Timber
 
 @LoginForm
