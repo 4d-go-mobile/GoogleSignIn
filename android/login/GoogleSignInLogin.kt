@@ -24,6 +24,7 @@ import com.qmobile.qmobileui.binding.bindImageFromDrawable
 import com.qmobile.qmobileui.ui.SnackbarHelper
 import com.qmobile.qmobileui.ui.setOnSingleClickListener
 import com.qmobile.qmobileui.ui.setOnVeryLongClickListener
+import com.qmobile.qmobileui.utils.parcelable
 import ___APP_PACKAGE___.R
 import ___APP_PACKAGE___.databinding.GoogleSignInLoginBinding
 import timber.log.Timber
@@ -108,7 +109,7 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(activityResult.data)
                 handleSignInResult(task)
             } else {
-                (activityResult.data?.extras?.get("googleSignInStatus") as Status?)?.statusCode?.let {
+                activityResult.data?.extras?.parcelable<Status>("googleSignInStatus")?.statusCode?.let {
                     handleError(it, false)
                 }
             }
