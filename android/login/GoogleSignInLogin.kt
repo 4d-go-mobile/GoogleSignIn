@@ -98,8 +98,21 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
     }
 
     private fun signIn() {
-        val signInIntent: Intent = mGoogleSignInClient.signInIntent
-        signInLauncher.launch(signInIntent)
+        if (verifyClientId()) {
+            val signInIntent: Intent = mGoogleSignInClient.signInIntent
+            signInLauncher.launch(signInIntent)
+        } else {
+            SnackbarHelper.show(
+                activity,
+                activity.resources.getString(R.string.login_google_no_server_client_id),
+                ToastMessage.Type.WARNING
+            )
+        }
+    }
+
+    private fun verifyClientId(): Boolean {
+        val serverClientId = activity.resources.getString(R.string.server_client_id)
+        return serverClientId.isNotEmpty() && serverClientId != "TO_BE_DEFINED"
     }
 
     private fun registerSignInLauncher(): ActivityResultLauncher<Intent> {
