@@ -1,5 +1,12 @@
 {
-  "type": "login",
-  "name": "googlesignin",
-  "target" : "android"
+    "type": "login",
+    "name": "googlesignin",
+    "target": ["android", "ios"],
+    "capabilities": {
+        "settings": {
+            "application.services": [
+                "GoogleSignInService"
+            ]
+        }
+    }
 }
