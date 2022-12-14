@@ -4,9 +4,11 @@
     "target": ["android", "ios"],
     "capabilities": {
         "settings": {
+            "google.clientID": "TO_BE_DEFINED with CLIENT_ID",
             "application.services": [
                 "GoogleSignInService"
             ]
         }
+        "urlSchemes": [ "TO_BE_DEFINED with REVERSE_CLIENT_ID"]
     }
 }
