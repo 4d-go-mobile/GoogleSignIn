@@ -27,6 +27,10 @@ class GoogleSignInService: NSObject {
     static var clientID: String {
         return preference.string(forKey: kPreferenceKey) ?? "TO_BE_DEFINED"
     }
+    static var expectedURLScheme: String {
+        return clientID.split(separator: ".").reversed().joined(separator: ".").lowercased()
+    }
+
     let config = GIDConfiguration(clientID: GoogleSignInService.clientID)
 
     fileprivate static var preference: PreferencesType {
@@ -47,7 +51,8 @@ class GoogleSignInService: NSObject {
 extension GoogleSignInService: ApplicationService {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
-        // Register logout event to call GIDSignIn.sharedInstance.signOut()
+        // TODO: Register logout event to call GIDSignIn.sharedInstance.signOut()
+        GIDSignIn.sharedInstance.configuration = config
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {}

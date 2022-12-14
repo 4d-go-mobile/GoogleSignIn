@@ -9,6 +9,7 @@ import UIKit
 import QMobileUI
 import QMobileAPI
 import GoogleSignIn
+import SwiftMessages
 
 @IBDesignable
 open class LoginForm: QMobileUI.LoginForm {
@@ -59,20 +60,30 @@ open class LoginForm: QMobileUI.LoginForm {
     fileprivate func setupAppleSignInButton() {
 
         setupViewWithTrait(traitCollection: self.traitCollection)
-        btnAuthorization.frame = CGRect()
         btnAuthorization.addTarget(self, action: #selector(signIn(_:)), for: .touchDown)
         self.view.addSubview(btnAuthorization)
 
         btnAuthorization.translatesAutoresizingMaskIntoConstraints = false
+        if self.traitCollection.userInterfaceStyle == .dark {
+            btnAuthorization.colorScheme = .dark
+        } else {
+            btnAuthorization.colorScheme = .light
+        }
         NSLayoutConstraint.activate([
+            btnAuthorization.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8),
+            btnAuthorization.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 8),
             btnAuthorization.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            btnAuthorization.bottomAnchor.constraint(equalTo: loginButton.topAnchor, constant: -56),
-            btnAuthorization.widthAnchor.constraint(equalTo: loginButton.widthAnchor),
-            btnAuthorization.heightAnchor.constraint(equalTo: loginButton.heightAnchor)
+            btnAuthorization.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 
-    override open func traitCollectionDidChange (_ previousTraitCollection: UITraitCollection?) {}
+    override open func traitCollectionDidChange (_ previousTraitCollection: UITraitCollection?) {
+        if self.traitCollection.userInterfaceStyle == .dark {
+            btnAuthorization.colorScheme = .dark
+        } else {
+            btnAuthorization.colorScheme = .light
+        }
+    }
 
     override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         /// Trait collection will change. Use this one so you know what the state is changing to.
@@ -88,21 +99,49 @@ open class LoginForm: QMobileUI.LoginForm {
     }
 
     @IBAction func signIn(_ sender: Any) {
+        // If the application does not support the required URL schemes tell the developer so, do not crash with google objc exeception. (other way is to have code to catch it)
+        guard let externalURLSchemes = (Bundle.main.infoDictionary?["CFBundleURLTypes"] as? [AnyObject])?
+            .compactMap({ $0 as? [String: AnyObject] })
+            .compactMap({ $0["CFBundleURLSchemes"] as? [String] })
+            .flatMap({$0}), externalURLSchemes.contains(GoogleSignInService.expectedURLScheme) else {
+            self.displayInputError(message:"Your app is missing support for the following URL schemes: \(GoogleSignInService.expectedURLScheme)")
+            return
+        }
+
         GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
             guard error == nil else {
-                // XXX error
+                self.displayInputError(message: error?.localizedDescription ?? error.debugDescription)
                 return
             }
             guard let result = result else {
-                // XXX error
+                self.displayInputError(message: "No result from google")
                 return
             }
             guard let email = result.user.profile?.email else {
-                // XXX error
+                self.displayInputError(message: "No email from google")
                 return
             }
-            var parameters: [String: String] = [:]
-            parameters["serverAuthCode"] = result.serverAuthCode ?? ""
+            var parameters: [String: Any] = [:]
+            if let serverAuthCode = result.serverAuthCode {
+                parameters["serverAuthCode"] = serverAuthCode
+            }
+            let refreshToken = result.user.refreshToken
+            parameters["refreshToken"] = ["date": refreshToken.expirationDate?.iso8601 ?? "", "token": refreshToken.tokenString]
+            let accessToken = result.user.accessToken
+            parameters["accessToken"] = ["date": accessToken.expirationDate?.iso8601 ?? "", "token": accessToken.tokenString]
+            if let idToken = result.user.idToken {
+                parameters["idToken"] = ["date": idToken.expirationDate?.iso8601 ?? "", "token": idToken.tokenString]
+            }
+            if let profile = result.user.profile {
+                parameters["profile"] = [
+                    "email": profile.email,
+                    "name": profile.name,
+                    "givenName": profile.givenName ?? "",
+                    "familyName": profile.familyName ?? "",
+                    "imageURL": profile.imageURL(withDimension: 128)?.absoluteString ?? ""
+                ]
+            }
+
             self.authentificate(login: email, parameters: parameters)
             // If sign in succeeded, display the app's main content View.
         }
@@ -112,6 +151,9 @@ open class LoginForm: QMobileUI.LoginForm {
       GIDSignIn.sharedInstance.signOut()
     }
 
+    override open func displayInputError(message: String) {
+        SwiftMessages.error(title: "", message: message)
+    }
 }
 
 
