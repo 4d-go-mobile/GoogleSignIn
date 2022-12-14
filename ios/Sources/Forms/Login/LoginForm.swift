@@ -126,16 +126,16 @@ open class LoginForm: QMobileUI.LoginForm {
                 parameters["serverAuthCode"] = serverAuthCode
             }
             let refreshToken = result.user.refreshToken
-            parameters["refreshToken"] = ["date": refreshToken.expirationDate?.iso8601 ?? "", "token": refreshToken.tokenString]
+            parameters["refreshToken"] = ["date": refreshToken.expirationDate?.iso8601 ?? "", "value": refreshToken.tokenString]
             let accessToken = result.user.accessToken
-            parameters["accessToken"] = ["date": accessToken.expirationDate?.iso8601 ?? "", "token": accessToken.tokenString]
+            parameters["accessToken"] = ["date": accessToken.expirationDate?.iso8601 ?? "", "value": accessToken.tokenString]
             if let idToken = result.user.idToken {
-                parameters["idToken"] = ["date": idToken.expirationDate?.iso8601 ?? "", "token": idToken.tokenString]
+                parameters["idToken"] = ["date": idToken.expirationDate?.iso8601 ?? "", "value": idToken.tokenString]
             }
             if let profile = result.user.profile {
                 parameters["profile"] = [
                     "email": profile.email,
-                    "name": profile.name,
+                    "displayName": profile.name,
                     "givenName": profile.givenName ?? "",
                     "familyName": profile.familyName ?? "",
                     "imageURL": profile.imageURL(withDimension: 128)?.absoluteString ?? ""
@@ -155,7 +155,6 @@ open class LoginForm: QMobileUI.LoginForm {
         SwiftMessages.error(title: "", message: message)
     }
 }
-
 
 // MARK: - Authentication
 
