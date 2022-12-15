@@ -27,6 +27,8 @@ import com.qmobile.qmobileui.ui.setOnVeryLongClickListener
 import com.qmobile.qmobileui.utils.parcelable
 import ___APP_PACKAGE___.R
 import ___APP_PACKAGE___.databinding.GoogleSignInLoginBinding
+import org.json.JSONArray
+import org.json.JSONObject
 import timber.log.Timber
 
 @LoginForm
@@ -64,7 +66,7 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
             signIn()
         }
     }
-     
+
     override fun validate(input: String): Boolean {
         return true
     }
@@ -131,17 +133,43 @@ class GoogleSignInLogin(private val activity: LoginActivity) : LoginHandler {
 
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
-            completedTask.getResult(ApiException::class.java).email?.let {
-                activity.login(it)
-            } ?: kotlin.run {
+            val googleSignInAccount: GoogleSignInAccount = completedTask.getResult(ApiException::class.java)
+            if (googleSignInAccount.email.isNullOrEmpty()) {
                 SnackbarHelper.show(
                     activity,
                     "No email attached to this account",
                     ToastMessage.Type.WARNING
                 )
+                return
             }
+            activity.login(googleSignInAccount.buildJson().toString())
         } catch (e: ApiException) {
             handleError(e.statusCode, true)
+        }
+    }
+
+    private fun GoogleSignInAccount.buildJson(): JSONObject {
+        return JSONObject().apply {
+            put("email", email)
+            id?.let { put("id", it) }
+            displayName?.let { put("displayName", it) }
+            familyName?.let { put("familyName", it) }
+            givenName?.let { put("givenName", it) }
+            idToken?.let { put("idToken", it) }
+            photoUrl?.let { put("photoUrl", it) }
+            serverAuthCode?.let { put("serverAuthCode", it) }
+            put("isExpired", isExpired)
+            val accountJson = JSONObject().apply {
+                account?.let {
+                    put("name", it.name)
+                    put("type", it.type)
+                }
+            }
+            put("account", accountJson)
+            val grantedScopesArray = JSONArray(grantedScopes.map { it.scopeUri })
+            put("grantedScopes", grantedScopesArray)
+            val requestedScopesArray = JSONArray(requestedScopes.map { it.scopeUri })
+            put("requestedScopes", requestedScopesArray)
         }
     }
 
